@@ -128,8 +128,8 @@ app.get('/playlist', async (req, res) => {
     
     if (req.headers != null && req.headers != undefined){
         if (req.headers.authorization != null && req.headers.authorization != undefined){
-            console.log('req.headers.authorization');
-            console.log(req.headers.authorization);
+            // console.log('req.headers.authorization');
+            // console.log(req.headers.authorization);
         }
     }
   })
@@ -147,8 +147,8 @@ app.get('/currentSong', async (req, res) => {
 
     if (req.headers != null && req.headers != undefined){
         if (req.headers.authorization != null && req.headers.authorization != undefined){
-            console.log('req.headers.authorization');
-            console.log(req.headers.authorization);
+            // console.log('req.headers.authorization');
+            // console.log(req.headers.authorization);
         }
     }
 })
@@ -169,8 +169,8 @@ app.post('/currentSong', async (req, res) => {
     
     if (req.headers != null && req.headers != undefined){
         if (req.headers.authorization != null && req.headers.authorization != undefined){
-            console.log('req.headers.authorization');
-            console.log(req.headers.authorization);
+            // console.log('req.headers.authorization');
+            // console.log(req.headers.authorization);
         }
     }
 })
@@ -191,17 +191,17 @@ app.post('/addSong', async (req, res) => {
     
     if (req.headers != null && req.headers != undefined){
         if (req.headers.authorization != null && req.headers.authorization != undefined){
-            console.log('req.headers.authorization');
-            console.log(req.headers.authorization);
+            // console.log('req.headers.authorization');
+            // console.log(req.headers.authorization);
         }
     }
 })
 
 app.post('/rearrangeSongs', async (req, res) => {
     console.log('received post to Rearrange Songs');
-    console.log(req.body);
-    console.log('ReorderedTracks var =');
-    console.log(req.body.reorderedTracks);
+    //console.log(req.body);
+    //console.log('ReorderedTracks var =');
+    //console.log(req.body.reorderedTracks);
     // console.log(req);
     if (req.body != null && req.body != undefined){
         
@@ -214,11 +214,65 @@ app.post('/rearrangeSongs', async (req, res) => {
     
     if (req.headers != null && req.headers != undefined){
         if (req.headers.authorization != null && req.headers.authorization != undefined){
-            console.log('req.headers.authorization');
-            console.log(req.headers.authorization);
+            // console.log('req.headers.authorization');
+            // console.log(req.headers.authorization);
         }
     }
 })
+
+// addedTimestamp //user id //optional RequestedBy
+app.post('/deleteSong', async(req, res) => {
+    if (req.body != null && req.body != undefined){
+        //
+        if (req.body.track != null && req.body.track != undefined && req.body.userId != undefined && req.body.userId != undefined){
+            // console.log(req.body);
+            playlist = await indexFunctions.deleteTrack(req.body.track, req.body.userId);
+            res.send('Successfully deleted song.');
+        }
+    }
+})
+
+app.post('/clearPlaylist', async(req, res) => {
+    if (req.body != null && req.body != undefined){
+        //
+        if (req.body.userId != undefined && req.body.userId != undefined){
+            // console.log(req.body);
+            playlist = await indexFunctions.clearPlaylist(req.body.userId);
+            res.send('Successfully deleted songs.');
+        }
+    }
+})
+
+app.put('/updateSettings', async(req, res) => {
+    if (req.body != null && req.body != undefined){
+        //
+        if (req.body.userId != undefined && req.body.userId != undefined){
+            // console.log(req.body);
+            playlist = await indexFunctions.updateSettings(req.body.userId);
+            res.send('Successfully updated settings.');
+        }
+    }
+})
+
+app.get('/getSettings', async(req, res) => {
+    console.log('Retrieving Settings.');
+    if (req.query != null && req.query != undefined){
+        //
+        if (req.query.userId != null && req.query.userId != undefined){
+            console.log(req.body);
+            settings = await indexFunctions.getSettings(req.query.userId);
+            console.log('Successfully Retrieved Settings.');
+            res.send({data: settings});
+        }
+    } else{
+
+        console.log("ERROR: MISSING DATA IN getSettings request");
+        
+        res.status(400).send({message: "Error: missing expected data in getSettings request."});
+    }
+})
+
+
 
 
 app.get('/', (req, res) => {

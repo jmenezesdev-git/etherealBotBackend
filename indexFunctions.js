@@ -19,15 +19,22 @@ const mdb_userPlaylistTracks = new mongoose.Schema({
     //_id: String,
   });
 
+const mdb_userSettings = new mongoose.Schema({
+    lengthLimit: String,
+    songsPerUser: Number,
+    streamChannel: String,
+    //_id: String,
+  });
+
   
 
 
 
 mdb_userPlaylistTracks.methods.shortTime = getShortTime;
-module.exports = { getPlaylist, getCurrentSong, updateCurrentSong, getShortTime, addSong, rearrangeTracks}
+module.exports = { getPlaylist, getCurrentSong, updateCurrentSong, getShortTime, addSong, rearrangeTracks, deleteTrack, clearPlaylist, updateSettings, getSettings}
 async function getPlaylist(userId){
-    
-    console.log('userid of getPlaylist call = ' + userId);
+    await ifNotExistCreateSettings(userId);
+    console.log('userId of getPlaylist call = ' + userId);
     await mongoose.connect('mongodb://127.0.0.1:20713/ethbotDB');
 
     const userPlaylistTracks = mongoose.model('userPlaylistTracks', mdb_userPlaylistTracks);
@@ -51,16 +58,62 @@ async function getPlaylist(userId){
     return userPlaylistTrackList;
 }
 
-async function rearrangeTracks(reorderedTracks, userId){
+async function getSettings(userId){
+    await ifNotExistCreateSettings(userId);
+    await mongoose.connect('mongodb://127.0.0.1:20713/ethbotDB');
+    const userSettings = mongoose.model('userSettings', mdb_userSettings);
+    var updateQuery = userSettings.findOne({streamChannel: userId});
+    var results = await updateQuery.exec();
+    console.log(results);
+    return results;
+}
 
+async function updateSettings(settings, userId){
+    await ifNotExistCreateSettings(userId);
+    await mongoose.connect('mongodb://127.0.0.1:20713/ethbotDB');
+    const userSettings = mongoose.model('userSettings', mdb_userSettings);
+    var updateQuery = userSettings.findOneAndUpdate({streamChannel: userId}, { lengthLimit: settings.lengthLimit,  songsPerUser: settings.songsPerUser});
+    var results = await updateQuery.exec();
+    console.log(results);
+
+}
+
+async function ifNotExistCreateSettings(userId){
+    await mongoose.connect('mongodb://127.0.0.1:20713/ethbotDB');
+    const userSettings = mongoose.model('userSettings', mdb_userSettings);
+    const retrievedUserSettings = await userSettings.find({streamChannel: userId}).then( data =>{
+
+        console.log(data);
+        if(data.length == 0) {
+            console.log("No record found");
+
+            const newUserSettings = new userSettings({ streamChannel: userId, 
+                lengthLimit: '-1', 
+                songsPerUser: -1, 
+            });
+             newUserSettings.save();
+
+
+            return;
+        }
+        else{
+            console.log("found userSettings");
+            return;
+        }
+    });
+
+
+}
+
+async function rearrangeTracks(reorderedTracks, userId){
     await mongoose.connect('mongodb://127.0.0.1:20713/ethbotDB');
     const userPlaylistTracks = mongoose.model('userPlaylistTracks', mdb_userPlaylistTracks);
 
     for (i = 0; i<reorderedTracks.length;i++){
-        console.log('rearranging track - ' + reorderedTracks[i].addedTimestamp + ' + ' + reorderedTracks[i].position);
+        //console.log('rearranging track - ' + reorderedTracks[i].addedTimestamp + ' + ' + reorderedTracks[i].position);
         var updateQuery = userPlaylistTracks.findOneAndUpdate({streamChannel: userId, addedTimestamp: reorderedTracks[i].addedTimestamp}, { position: reorderedTracks[i].position });
         var results = await updateQuery.exec();
-        console.log(results);
+        //console.log(results);
     }
 
     // for (const track in reorderedTracks){
@@ -71,24 +124,50 @@ async function rearrangeTracks(reorderedTracks, userId){
 }
 
 
-async function getCurrentSong(userid){
+async function deleteTrack(track, userId){
+    await mongoose.connect('mongodb://127.0.0.1:20713/ethbotDB');
+    const userPlaylistTracks = mongoose.model('userPlaylistTracks', mdb_userPlaylistTracks);
+    console.log('deleting track - ' + track.addedTimestamp + track.position + ' Requested by - ' + track.requestedBy);
+    var updateQuery = userPlaylistTracks.deleteOne({streamChannel: userId, addedTimestamp: track.addedTimestamp, position: track.position, requestedBy: track.requestedBy});
+    var results = await updateQuery.exec();
+    console.log('deleteResults');
+    console.log(results);
+
     
-    console.log('userid of getCurrentSong call = ' + userid);
+    const updateQuery2 = userPlaylistTracks.updateMany({streamChannel: userId, position: { $gt: track.position}  }, { $inc: { position: -1 } });
+    const results2 = await updateQuery2.exec();
+    console.log('updateManyResults');
+    console.log(results2);
+}
+
+
+async function clearPlaylist(userId){
+    await mongoose.connect('mongodb://127.0.0.1:20713/ethbotDB');
+    const userPlaylistTracks = mongoose.model('userPlaylistTracks', mdb_userPlaylistTracks);
+    console.log('deleting all tracks from ' + userId + ' \'s active playlist');
+    var updateQuery = userPlaylistTracks.deleteMany({streamChannel: userId});
+    var results = await updateQuery.exec();
+    console.log(results);
+}
+
+
+async function getCurrentSong(userId){
+    await ifNotExistCreateSettings(userId);
+    console.log('userId of getCurrentSong call = ' + userId);
     await mongoose.connect('mongodb://127.0.0.1:20713/ethbotDB');
     const userCurrentSong = mongoose.model('userCurrentSong', mdb_userPlaylistTracks);
 
 
-    const currentSong = await userCurrentSong.find({streamChannel: userid});
-    console.log(currentSong);
+    const currentSong = await userCurrentSong.find({streamChannel: userId});
+    //console.log(currentSong);
     //mongoose.disconnect();
 
     return currentSong;
 }
 
 async function updateCurrentSong(value, userId){ //value is the "new" current song. Use it to validate track choice.
-    //Never Gonna...
-    //Never Gonna...
-    //Never Gonna...
+
+    await ifNotExistCreateSettings(userId);
     //console.log('value of updateCurrentSong call = ');
     //console.log(value);
     await mongoose.connect('mongodb://127.0.0.1:20713/ethbotDB');
@@ -138,19 +217,18 @@ async function updateCurrentSong(value, userId){ //value is the "new" current so
     return "success";
 }
 
-function addSong(newTrack, userId){
+async function addSong(newTrack, userId){
     pushPlaylist(newTrack, userId);
 }
 
 
 
-function getDefaultPlaylist(){
-
+async function getDefaultPlaylist(){
+    await ifNotExistCreateSettings(userId);
     
 }
 
-function addToDefaultPlaylist(){
-
+async function addToDefaultPlaylist(){
 }
 
 async function pushPlaylist(newTrack, userId){
