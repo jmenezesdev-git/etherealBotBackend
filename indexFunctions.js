@@ -35,7 +35,8 @@ module.exports = { getPlaylist, getCurrentSong, updateCurrentSong, getShortTime,
 async function getPlaylist(userId){
     await ifNotExistCreateSettings(userId);
     console.log('userId of getPlaylist call = ' + userId);
-    await mongoose.connect('mongodb://127.0.0.1:20713/ethbotDB');
+    // await mongoose.connect('mongodb://127.0.0.1:20713/ethbotDB');
+    await mongoose.connect('mongodb://ethbotmongo/ethbotDB');
 
     const userPlaylistTracks = mongoose.model('userPlaylistTracks', mdb_userPlaylistTracks);
 
@@ -60,7 +61,8 @@ async function getPlaylist(userId){
 
 async function getSettings(userId){
     await ifNotExistCreateSettings(userId);
-    await mongoose.connect('mongodb://127.0.0.1:20713/ethbotDB');
+    // await mongoose.connect('mongodb://127.0.0.1:20713/ethbotDB');
+    await mongoose.connect('mongodb://ethbotmongo/ethbotDB');
     const userSettings = mongoose.model('userSettings', mdb_userSettings);
     var updateQuery = userSettings.findOne({streamChannel: userId});
     var results = await updateQuery.exec();
@@ -70,7 +72,8 @@ async function getSettings(userId){
 
 async function updateSettings(settings, userId){
     await ifNotExistCreateSettings(userId);
-    await mongoose.connect('mongodb://127.0.0.1:20713/ethbotDB');
+    // await mongoose.connect('mongodb://127.0.0.1:20713/ethbotDB');
+    await mongoose.connect('mongodb://ethbotmongo/ethbotDB');
     const userSettings = mongoose.model('userSettings', mdb_userSettings);
     var updateQuery = userSettings.findOneAndUpdate({streamChannel: userId}, { lengthLimit: settings.lengthLimit,  songsPerUser: settings.songsPerUser});
     var results = await updateQuery.exec();
@@ -79,7 +82,8 @@ async function updateSettings(settings, userId){
 }
 
 async function ifNotExistCreateSettings(userId){
-    await mongoose.connect('mongodb://127.0.0.1:20713/ethbotDB');
+    // await mongoose.connect('mongodb://127.0.0.1:20713/ethbotDB');
+    await mongoose.connect('mongodb://ethbotmongo/ethbotDB');
     const userSettings = mongoose.model('userSettings', mdb_userSettings);
     const retrievedUserSettings = await userSettings.find({streamChannel: userId}).then( data =>{
 
@@ -106,7 +110,8 @@ async function ifNotExistCreateSettings(userId){
 }
 
 async function rearrangeTracks(reorderedTracks, userId){
-    await mongoose.connect('mongodb://127.0.0.1:20713/ethbotDB');
+    // await mongoose.connect('mongodb://127.0.0.1:20713/ethbotDB');
+    await mongoose.connect('mongodb://ethbotmongo/ethbotDB');
     const userPlaylistTracks = mongoose.model('userPlaylistTracks', mdb_userPlaylistTracks);
 
     for (i = 0; i<reorderedTracks.length;i++){
@@ -125,7 +130,8 @@ async function rearrangeTracks(reorderedTracks, userId){
 
 
 async function deleteTrack(track, userId){
-    await mongoose.connect('mongodb://127.0.0.1:20713/ethbotDB');
+    // await mongoose.connect('mongodb://127.0.0.1:20713/ethbotDB');
+    await mongoose.connect('mongodb://ethbotmongo/ethbotDB');
     const userPlaylistTracks = mongoose.model('userPlaylistTracks', mdb_userPlaylistTracks);
     console.log('deleting track - ' + track.addedTimestamp + track.position + ' Requested by - ' + track.requestedBy);
     var updateQuery = userPlaylistTracks.deleteOne({streamChannel: userId, addedTimestamp: track.addedTimestamp, position: track.position, requestedBy: track.requestedBy});
@@ -142,7 +148,8 @@ async function deleteTrack(track, userId){
 
 
 async function clearPlaylist(userId){
-    await mongoose.connect('mongodb://127.0.0.1:20713/ethbotDB');
+    // await mongoose.connect('mongodb://127.0.0.1:20713/ethbotDB');
+    await mongoose.connect('mongodb://ethbotmongo/ethbotDB');
     const userPlaylistTracks = mongoose.model('userPlaylistTracks', mdb_userPlaylistTracks);
     console.log('deleting all tracks from ' + userId + ' \'s active playlist');
     var updateQuery = userPlaylistTracks.deleteMany({streamChannel: userId});
@@ -154,7 +161,8 @@ async function clearPlaylist(userId){
 async function getCurrentSong(userId){
     await ifNotExistCreateSettings(userId);
     console.log('userId of getCurrentSong call = ' + userId);
-    await mongoose.connect('mongodb://127.0.0.1:20713/ethbotDB');
+    // await mongoose.connect('mongodb://127.0.0.1:20713/ethbotDB');
+    await mongoose.connect('mongodb://ethbotmongo/ethbotDB');
     const userCurrentSong = mongoose.model('userCurrentSong', mdb_userPlaylistTracks);
 
 
@@ -170,7 +178,8 @@ async function updateCurrentSong(value, userId){ //value is the "new" current so
     await ifNotExistCreateSettings(userId);
     //console.log('value of updateCurrentSong call = ');
     //console.log(value);
-    await mongoose.connect('mongodb://127.0.0.1:20713/ethbotDB');
+    // await mongoose.connect('mongodb://127.0.0.1:20713/ethbotDB');
+    await mongoose.connect('mongodb://ethbotmongo/ethbotDB');
     const userPlaylistTracks = mongoose.model('userPlaylistTracks', mdb_userPlaylistTracks);
     const userCurrentSong = mongoose.model('userCurrentSong', mdb_userPlaylistTracks);
 
@@ -233,7 +242,8 @@ async function addToDefaultPlaylist(){
 
 async function pushPlaylist(newTrack, userId){
     console.log(newTrack);
-    await mongoose.connect('mongodb://127.0.0.1:20713/ethbotDB');
+    // await mongoose.connect('mongodb://127.0.0.1:20713/ethbotDB');
+    await mongoose.connect('mongodb://ethbotmongo/ethbotDB');
     const userPlaylistTracks = mongoose.model('userPlaylistTracks', mdb_userPlaylistTracks);
 
     const newSong = new userPlaylistTracks({ streamChannel: userId, 
