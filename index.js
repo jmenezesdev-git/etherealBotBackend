@@ -175,6 +175,34 @@ app.post('/currentSong', async (req, res) => {
     }
 })
 
+app.get('/nextDefaultTrack', async (req, res) => {
+    console.log('received request to nextDefaultTrack');
+    if (req.query != null && req.query != undefined){
+        
+        if (req.query.userid != null && req.query.userid != undefined && req.query.trackno != null && req.query.trackno != undefined){
+            console.log(req.query);
+            response = await indexFunctions.getNextDefaultSong(req.query.userid, req.query.trackno);
+            if (response != null){
+                res.send({data: response});
+            }
+            else{
+                res.send("Error: There was a problem retrieving next default song. It may not exist.");
+            }
+        } else{
+            res.send("Error: missing parts of request body");
+        }
+    }
+
+    if (req.headers != null && req.headers != undefined){
+        if (req.headers.authorization != null && req.headers.authorization != undefined){
+            // console.log('req.headers.authorization');
+            // console.log(req.headers.authorization);
+        }
+    }
+})
+
+
+
 app.post('/addSong', async (req, res) => {
     console.log('received post to Add Song');
     console.log(req.body);
@@ -186,6 +214,28 @@ app.post('/addSong', async (req, res) => {
             // console.log(req.body);
             playlist = await indexFunctions.addSong(req.body.newTrack, req.body.userId);
             res.send('Successfully added new song.');
+        }
+    }
+    
+    if (req.headers != null && req.headers != undefined){
+        if (req.headers.authorization != null && req.headers.authorization != undefined){
+            // console.log('req.headers.authorization');
+            // console.log(req.headers.authorization);
+        }
+    }
+})
+
+app.post('/addDefaultSong', async (req, res) => {
+    console.log('received post to Add Song');
+    console.log(req.body);
+    console.log(req.body.newTrack);
+    // console.log(req);
+    if (req.body != null && req.body != undefined){
+        
+        if (req.body.newTrack != null && req.body.newTrack != undefined && req.body.userId != undefined && req.body.userId != undefined){
+            // console.log(req.body);
+            playlist = await indexFunctions.addDefaultSong(req.body.newTrack, req.body.userId);
+            res.send('Successfully added new Default song.');
         }
     }
     
@@ -246,11 +296,17 @@ app.post('/clearPlaylist', async(req, res) => {
 app.put('/updateSettings', async(req, res) => {
     if (req.body != null && req.body != undefined){
         //
-        if (req.body.userId != undefined && req.body.userId != undefined){
+        if (req.body.userId != undefined && req.body.settings != undefined){
             // console.log(req.body);
-            playlist = await indexFunctions.updateSettings(req.body.userId);
-            res.send('Successfully updated settings.');
+            results = await indexFunctions.updateSettings(req.body.settings, req.body.userId);
+            res.send(results);
         }
+        else{
+            res.send("Error: Missing critical information to update Settings")
+        }
+    }
+    else{
+        res.send("Error: missing request body");
     }
 })
 
