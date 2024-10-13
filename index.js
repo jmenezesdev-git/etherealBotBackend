@@ -156,7 +156,7 @@ app.get('/currentSong', async (req, res) => {
 app.post('/currentSong', async (req, res) => {
     console.log('received post to CurrentSong');
     console.log(req.body);
-    console.log(req.newCurrentSong);
+    // console.log(req.newCurrentSong);
     // console.log(req);
     if (req.body != null && req.body != undefined){
         
@@ -183,6 +183,7 @@ app.get('/nextDefaultTrack', async (req, res) => {
             console.log(req.query);
             response = await indexFunctions.getNextDefaultSong(req.query.userid, req.query.trackno);
             if (response != null){
+                console.log("sent response to nextDefaultTrack");
                 res.send({data: response});
             }
             else{
@@ -276,7 +277,7 @@ app.post('/deleteSong', async(req, res) => {
         //
         if (req.body.track != null && req.body.track != undefined && req.body.userId != undefined && req.body.userId != undefined){
             // console.log(req.body);
-            playlist = await indexFunctions.deleteTrack(req.body.track, req.body.userId);
+            playlist = await indexFunctions.deletePlaylistTrack(req.body.track, req.body.userId);
             res.send('Successfully deleted song.');
         }
     }
@@ -329,6 +330,20 @@ app.get('/getSettings', async(req, res) => {
 })
 
 
+
+app.post('/deleteDefault', async(req, res) => {
+    if (req.body != null && req.body != undefined){
+        //
+        if (req.body.track != null && req.body.track != undefined && req.body.userId != undefined && req.body.userId != undefined){
+            // console.log(req.body);
+            playlist = await indexFunctions.deleteDefaultTrack(req.body.track, req.body.userId);
+            res.send('Successfully deleted song.');
+        }
+        else{
+            res.send('Missing track or userId');
+        }
+    }
+})
 
 
 app.get('/', (req, res) => {
