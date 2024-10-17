@@ -105,7 +105,6 @@ app.use(express.json())
 //     mongoose.disconnect();
 
 // }
-//const data = require('./data.json');
 
 //FrontEnd Server - 4200
 //BackEnd Server - 3000
@@ -208,11 +207,9 @@ app.post('/addSong', async (req, res) => {
     console.log('received post to Add Song');
     console.log(req.body);
     console.log(req.body.newTrack);
-    // console.log(req);
     if (req.body != null && req.body != undefined){
         
         if (req.body.newTrack != null && req.body.newTrack != undefined && req.body.userId != undefined && req.body.userId != undefined){
-            // console.log(req.body);
             playlist = await indexFunctions.addSong(req.body.newTrack, req.body.userId);
             res.send('Successfully added new song.');
         }
@@ -276,7 +273,6 @@ app.post('/deleteSong', async(req, res) => {
     if (req.body != null && req.body != undefined){
         //
         if (req.body.track != null && req.body.track != undefined && req.body.userId != undefined && req.body.userId != undefined){
-            // console.log(req.body);
             playlist = await indexFunctions.deletePlaylistTrack(req.body.track, req.body.userId);
             res.send('Successfully deleted song.');
         }
@@ -287,7 +283,6 @@ app.post('/clearPlaylist', async(req, res) => {
     if (req.body != null && req.body != undefined){
         //
         if (req.body.userId != undefined && req.body.userId != undefined){
-            // console.log(req.body);
             playlist = await indexFunctions.clearPlaylist(req.body.userId);
             res.send('Successfully deleted songs.');
         }
@@ -298,7 +293,6 @@ app.put('/updateSettings', async(req, res) => {
     if (req.body != null && req.body != undefined){
         //
         if (req.body.userId != undefined && req.body.settings != undefined){
-            // console.log(req.body);
             results = await indexFunctions.updateSettings(req.body.settings, req.body.userId);
             res.send(results);
         }
@@ -316,7 +310,6 @@ app.get('/getSettings', async(req, res) => {
     if (req.query != null && req.query != undefined){
         //
         if (req.query.userId != null && req.query.userId != undefined){
-            console.log(req.body);
             settings = await indexFunctions.getSettings(req.query.userId);
             console.log('Successfully Retrieved Settings.');
             res.send({data: settings});
@@ -329,13 +322,10 @@ app.get('/getSettings', async(req, res) => {
     }
 })
 
-
-
 app.post('/deleteDefault', async(req, res) => {
     if (req.body != null && req.body != undefined){
         //
         if (req.body.track != null && req.body.track != undefined && req.body.userId != undefined && req.body.userId != undefined){
-            // console.log(req.body);
             playlist = await indexFunctions.deleteDefaultTrack(req.body.track, req.body.userId);
             res.send('Successfully deleted song.');
         }
@@ -345,9 +335,8 @@ app.post('/deleteDefault', async(req, res) => {
     }
 })
 
-
 app.get('/', (req, res) => {
-res.send('This server is not dead yet!')
+    res.send('This server is not dead yet!')
 })
 
 

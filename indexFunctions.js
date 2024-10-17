@@ -16,7 +16,7 @@ const mdb_userPlaylistTracks = new mongoose.Schema({
     position: Number,
     streamChannel: String, 
 	addedTimestamp:String,
-    //_id: String,
+    //_id: String, field exists but is defined by the database
   });
 
 const mdb_userSettings = new mongoose.Schema({
@@ -25,7 +25,7 @@ const mdb_userSettings = new mongoose.Schema({
     songsPerUser: Number,
     songsPerUserMod: Boolean,
     streamChannel: String,
-    //_id: String,
+    //_id: String, field exists but is defined by the database
   });
 
 //  const serverConnectionString = "mongodb://127.0.0.1:20713";
@@ -36,6 +36,7 @@ const mdb_userSettings = new mongoose.Schema({
 
 mdb_userPlaylistTracks.methods.shortTime = getShortTime;
 module.exports = { getPlaylist, getCurrentSong, updateCurrentSong, getShortTime, addSong, rearrangeTracks, deleteDefaultTrack, deletePlaylistTrack, clearPlaylist, updateSettings, getSettings, addDefaultSong, getNextDefaultSong}
+
 async function getPlaylist(userId){
     await ifNotExistCreateSettings(userId);
     console.log('userId of getPlaylist call = ' + userId);
@@ -55,10 +56,6 @@ async function getPlaylist(userId){
 
 
     );
-
-    // const userPlaylistTrackList = await userPlaylistTracks.find({streamChannel: userId},[]);
-
-
     return userPlaylistTrackList;
 }
 
@@ -89,7 +86,6 @@ async function ifNotExistCreateSettings(userId){
     const userSettings = mongoose.model('userSettings', mdb_userSettings);
     const retrievedUserSettings = await userSettings.find({streamChannel: userId}).then( async data =>{
 
-        // console.log(data);
         if(data.length == 0) {
             console.log("No record found");
 
@@ -106,7 +102,6 @@ async function ifNotExistCreateSettings(userId){
             return;
         }
         else{
-            // console.log(data);
             console.log("found userSettings");
             return;
         }
@@ -120,22 +115,9 @@ async function rearrangeTracks(reorderedTracks, userId){
     const userPlaylistTracks = mongoose.model('userPlaylistTracks', mdb_userPlaylistTracks);
 
     for (i = 0; i<reorderedTracks.length;i++){
-        //console.log('rearranging track - ' + reorderedTracks[i].addedTimestamp + ' + ' + reorderedTracks[i].position);
         var updateQuery = userPlaylistTracks.findOneAndUpdate({streamChannel: userId, addedTimestamp: reorderedTracks[i].addedTimestamp}, { position: reorderedTracks[i].position });
         var results = await updateQuery.exec();
-        //console.log(results);
     }
-
-    // for (const track in reorderedTracks){
-        
-
-    // } 
-    //mongoose.disconnect();
-}
-
-
-async function deleteTrack(track, userId){
-    
 }
 
 async function deletePlaylistTrack(track, userId){
@@ -208,8 +190,6 @@ async function updateCurrentSong(value, userId){ //value is the "new" current so
 
     await ifNotExistCreateSettings(userId);
     var createFromValue = false;
-    //console.log('value of updateCurrentSong call = ');
-    //console.log(value);
     await mongoose.connect(serverConnectionString + '/ethbotDB');
     const userPlaylistTracks = mongoose.model('userPlaylistTracks', mdb_userPlaylistTracks);
     const userCurrentSong = mongoose.model('userCurrentSongs', mdb_userPlaylistTracks);
@@ -222,28 +202,24 @@ async function updateCurrentSong(value, userId){ //value is the "new" current so
         if(data.length == 0) {
             console.log("No record found, using provided data.");
             createFromValue = true;
-
             console.log(value);
-            
-
-            
         }
         else{
-        const newCurrentSong = new userCurrentSong({ streamChannel: userId, 
-            channelTitle: data[0].channelTitle, 
-            duration: data[0].duration, 
-            embeddable: data[0].embeddable, 
-            license: data[0].license, 
-            privacyStatus: data[0].privacyStatus,
-            publicStatsViewable: data[0].publicStatsViewable,
-            requestedBy: data[0].requestedBy,
-            songTitle: data[0].songTitle,
-            uploadStatus: data[0].uploadStatus,
-            videoId: data[0].videoId,
-            position: 0,
-            addedTimestamp: data[0].addedTimestamp
-        });
-        await newCurrentSong.save();
+            const newCurrentSong = new userCurrentSong({ streamChannel: userId, 
+                channelTitle: data[0].channelTitle, 
+                duration: data[0].duration, 
+                embeddable: data[0].embeddable, 
+                license: data[0].license, 
+                privacyStatus: data[0].privacyStatus,
+                publicStatsViewable: data[0].publicStatsViewable,
+                requestedBy: data[0].requestedBy,
+                songTitle: data[0].songTitle,
+                uploadStatus: data[0].uploadStatus,
+                videoId: data[0].videoId,
+                position: 0,
+                addedTimestamp: data[0].addedTimestamp
+            });
+            await newCurrentSong.save();
         }
     });
 
@@ -270,16 +246,14 @@ async function updateCurrentSong(value, userId){ //value is the "new" current so
     else{
 
         console.log('after create in updateCurrentSong (ELSE)');
-    //);
-    //delete position 1 track for user
-    await userPlaylistTracks.deleteOne({streamChannel: userId, position: 1})
+        //delete position 1 track for user
+        await userPlaylistTracks.deleteOne({streamChannel: userId, position: 1})
 
-    //update (decrement by 1) position for all remaining tracks
-    const updateQuery = userPlaylistTracks.updateMany({streamChannel: userId}, { $inc: { position: -1 } });
-    const results = await updateQuery.exec();
-    console.log(results);
+        //update (decrement by 1) position for all remaining tracks
+        const updateQuery = userPlaylistTracks.updateMany({streamChannel: userId}, { $inc: { position: -1 } });
+        const results = await updateQuery.exec();
+        console.log(results);
     }
-    //mongoose.disconnect();
 
     return "success";
 }
@@ -316,12 +290,10 @@ async function getNextDefaultSong(userId, trackNo){
             addedTimestamp: data[0].addedTimestamp
         });
         newCurrentSong.save();
-        //return data[0];
 
         return {trackInfo:data[0], trackNo:Number(trackNo) + 1};
     });
     return nextDefaultTrack;
-    //return {trackInfo:nextDefaultTrack, trackNo:trackNo + 1};
 }
 
 
@@ -329,15 +301,6 @@ async function addSong(newTrack, userId){
     pushPlaylist(newTrack, userId);
 }
 
-
-
-async function getDefaultPlaylist(){
-    await ifNotExistCreateSettings(userId);
-    
-}
-
-async function addToDefaultPlaylist(){
-}
 
 async function pushPlaylist(newTrack, userId){
     console.log(newTrack);
@@ -360,9 +323,6 @@ async function pushPlaylist(newTrack, userId){
     });
     await newSong.save();
 
-    //mongoose.disconnect();
-
-
 }
 
 async function getCountExistingDefaultTracksByUser(userId){
@@ -376,7 +336,7 @@ async function getCountExistingDefaultTracksByUser(userId){
         return results;
     }
     else{
-        return reuslts;
+        return results;
     }
 }
 
@@ -406,14 +366,9 @@ async function addDefaultSong(newTrack, userId){
     return "success";
 }
 
-function popPlaylist(){
-
-}
-
 function removeAtIndex(){
 
 }
-
 
 function getShortTime(){
     var days = 0;
